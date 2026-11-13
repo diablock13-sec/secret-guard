@@ -1,2 +1,3 @@
-def main() -> None:
-    print("Hello from secret-guard!")
+from secret_guard.cli import main
+
+__all__ = ["main"]
