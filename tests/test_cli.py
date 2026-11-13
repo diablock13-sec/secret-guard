@@ -267,3 +267,48 @@ def test_install_outside_repo_is_error(tmp_path, capsys):
     os.chdir(plain)
     assert main(["install-hook"]) == 2
     assert "secret-guard:" in capsys.readouterr().err
+
+
+# ---- laporan rich ----
+
+
+def scan_output(monkeypatch, capsys, path):
+    feed_stdin(monkeypatch, diff_for(path, f'KEY = "{SECRET}"'))
+    assert main(["scan", "--stdin"]) == 1
+    return capsys.readouterr().err
+
+
+def test_report_does_not_interpret_markup_in_path(monkeypatch, capsys):
+    err = scan_output(monkeypatch, capsys, "[bold]x[/bold].py")
+    assert "[bold]x[/bold].py" in err
+
+
+def test_report_does_not_expand_emoji_codes(monkeypatch, capsys):
+    err = scan_output(monkeypatch, capsys, "x:warning:.py")
+    assert "x:warning:.py" in err
+
+
+def test_report_neutralises_control_characters_in_path(monkeypatch, capsys):
+    err = scan_output(monkeypatch, capsys, "a\x1b[31mb.py")
+    assert "\x1b" not in err
+    assert "a?[31mb.py" in err
+
+
+def test_report_has_no_colour_codes_when_not_a_terminal(monkeypatch, capsys):
+    monkeypatch.delenv("FORCE_COLOR", raising=False)
+    assert "\x1b" not in scan_output(monkeypatch, capsys, "config.py")
+
+
+def test_report_uses_colour_when_forced(monkeypatch, capsys):
+    monkeypatch.setenv("FORCE_COLOR", "1")
+    monkeypatch.setenv("TERM", "xterm-256color")
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    err = scan_output(monkeypatch, capsys, "config.py")
+    assert "\x1b[" in err
+    assert SECRET not in err
+
+
+def test_report_respects_no_colour(monkeypatch, capsys):
+    monkeypatch.setenv("FORCE_COLOR", "1")
+    monkeypatch.setenv("NO_COLOR", "1")
+    assert "\x1b[3" not in scan_output(monkeypatch, capsys, "config.py")

@@ -6,6 +6,9 @@ import sys
 from importlib import metadata
 from pathlib import Path
 
+from rich.console import Console
+from rich.text import Text
+
 from secret_guard.ignore import IGNORE_FILE, IgnoreError, is_ignored, parse_ignore
 from secret_guard.scanner import Finding, scan_diff
 
@@ -69,24 +72,39 @@ def load_ignore(explicit: str | None) -> list[str]:
     return parse_ignore(text, path.name)
 
 
-def render(findings: list[Finding]) -> str:
-    lines = [f"secret-guard: {len(findings)} kemungkinan secret ditemukan", ""]
+def _clean(value: str) -> str:
+    """Ganti karakter yang tidak bisa dicetak (misalnya ESC) dengan '?'. Path dan isi
+    baris berasal dari diff, jadi tidak boleh mengendalikan terminal."""
+    return "".join(ch if ch.isprintable() else "?" for ch in value)
+
+
+def report(findings: list[Finding]) -> None:
+    """Cetak laporan ke stderr. Memakai Text (bukan string) supaya isi dari diff
+    tidak ditafsirkan sebagai markup atau emoji rich."""
+    console = Console(stderr=True, highlight=False, emoji=False)
+
+    def out(*parts: str | tuple[str, str]) -> None:
+        console.print(Text.assemble(*parts), soft_wrap=True)
+
+    out(("secret-guard:", "bold red"), f" {len(findings)} kemungkinan secret ditemukan")
+    console.print()
     current = None
     for item in sorted(findings, key=lambda x: (x.path, x.line, x.rule)):
         if item.path != current:
-            lines.append(item.path)
+            out((_clean(item.path), "bold"))
             current = item.path
-        lines.append(f"  baris {item.line:<5} {item.rule:<20} {item.preview}")
-    lines += [
-        "",
-        "Cara menangani:",
-        "  - Hapus secret dari file, lalu git add lagi. Kalau sudah pernah ter-commit",
-        "    atau ter-push, anggap sudah bocor dan ganti (rotate) kuncinya.",
-        "  - False positive: tambahkan '# secret-guard:ignore' di baris itu,",
-        f"    atau pola path di {IGNORE_FILE}.",
-        "  - Lewati sekali (tidak disarankan): git commit --no-verify",
-    ]
-    return "\n".join(lines)
+        out(
+            f"  baris {item.line:<5} ",
+            (f"{item.rule:<20} ", "yellow"),
+            (_clean(item.preview), "dim"),
+        )
+    console.print()
+    out(("Cara menangani:", "bold"))
+    out("  - Hapus secret dari file, lalu git add lagi. Kalau sudah pernah ter-commit")
+    out("    atau ter-push, anggap sudah bocor dan ganti (rotate) kuncinya.")
+    out("  - False positive: tambahkan '# secret-guard:ignore' di baris itu,")
+    out(f"    atau pola path di {IGNORE_FILE}.")
+    out("  - Lewati sekali (tidak disarankan): git commit --no-verify")
 
 
 def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
@@ -110,7 +128,7 @@ def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
             file=sys.stderr,
         )
     if kept:
-        print(render(kept), file=sys.stderr)
+        report(kept)
         return EXIT_FINDINGS
     if not quiet:
         print("secret-guard: tidak ada secret ditemukan")

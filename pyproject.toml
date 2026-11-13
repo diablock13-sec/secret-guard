@@ -6,7 +6,9 @@ authors = [
     { name = "diablock13-sec", email = "diablock13@gmail.com" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "rich>=15.0.0",
+]
 
 [project.scripts]
 secret-guard = "secret_guard:main"
