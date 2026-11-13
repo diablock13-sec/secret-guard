@@ -1,0 +1,22 @@
+[project]
+name = "secret-guard"
+version = "0.1.0"
+description = "Pemindai secret pada diff Git, memblokir commit yang memuat kunci atau password"
+authors = [
+    { name = "diablock13-sec", email = "diablock13@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+secret-guard = "secret_guard:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
