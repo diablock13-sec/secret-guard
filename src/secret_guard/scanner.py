@@ -1,7 +1,8 @@
+import hashlib
 import math
 import re
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from secret_guard.diff import added_lines
 
@@ -27,6 +28,9 @@ class Finding:
     path: str
     line: int
     preview: str  # sudah disensor, tidak pernah memuat rahasia utuh
+    # hash rahasia, untuk membedakan rahasia berbeda yang pratinjaunya sama.
+    # Tidak ikut perbandingan, repr, atau keluaran apa pun.
+    fingerprint: str = field(default="", repr=False, compare=False)
 
 
 RULES = (
@@ -62,6 +66,10 @@ def mask(secret: str) -> str:
     return secret[:4] + "****"
 
 
+def secret_fingerprint(secret: str) -> str:
+    return hashlib.sha256(secret.encode()).hexdigest()[:16]
+
+
 def looks_random(value: str) -> bool:
     if len(value) < VALUE_MIN_LEN:
         return False
@@ -84,14 +92,22 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
     for rule in RULES:
         for m in rule.pattern.finditer(text):
             spans.append(m.span())
-            findings.append(Finding(rule.name, path, line_no, mask(m.group(0))))
+            secret = m.group(0)
+            findings.append(
+                Finding(rule.name, path, line_no, mask(secret), secret_fingerprint(secret))
+            )
 
     for m in GENERIC.finditer(text):
         start, end = m.span(1)
         if any(s <= start and end <= e for s, e in spans):
             continue  # sudah tertangkap aturan yang lebih spesifik
         if looks_random(m.group(1)):
-            findings.append(Finding("generic-secret", path, line_no, mask(m.group(1))))
+            secret = m.group(1)
+            findings.append(
+                Finding(
+                    "generic-secret", path, line_no, mask(secret), secret_fingerprint(secret)
+                )
+            )
 
     return findings
 
