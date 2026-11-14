@@ -3,12 +3,15 @@ import os
 import shlex
 import subprocess
 import sys
+import tempfile
+from collections.abc import Iterator
 from importlib import metadata
 from pathlib import Path
 
 from rich.console import Console
 from rich.text import Text
 
+from secret_guard.history import MARK_FORMAT, HistoryResult, find_leaks, split_commits
 from secret_guard.ignore import IGNORE_FILE, IgnoreError, is_ignored, parse_ignore
 from secret_guard.scanner import Finding, scan_diff
 
@@ -132,6 +135,119 @@ def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
         return EXIT_FINDINGS
     if not quiet:
         print("secret-guard: tidak ada secret ditemukan")
+    return EXIT_OK
+
+
+def _positive_int(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError("harus bilangan bulat") from None
+    if number < 1:
+        raise argparse.ArgumentTypeError("harus 1 atau lebih")
+    return number
+
+
+def is_shallow() -> bool:
+    proc = run_git("rev-parse", "--is-shallow-repository")
+    return proc.returncode == 0 and proc.stdout.strip() == b"true"
+
+
+def iter_log_lines(max_commits: int | None) -> Iterator[str]:
+    """Alirkan keluaran `git log -p` baris demi baris tanpa memuat seluruh riwayat ke
+    memori, dari commit tertua ke terbaru, di semua cabang dan tag."""
+    cmd = [
+        "git", "-c", "core.quotepath=false", "log", "--all", "--reverse",
+        "-p", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames",
+        "--src-prefix=a/", "--dst-prefix=b/", "-U0",
+        "--date=short", f"--format={MARK_FORMAT}",
+    ]
+    if max_commits:
+        cmd += ["-n", str(max_commits)]
+    with tempfile.TemporaryFile() as errors:
+        try:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errors)
+        except FileNotFoundError:
+            raise GitError("git tidak ditemukan di PATH") from None
+        stream = proc.stdout
+        if stream is None:
+            raise GitError("git log tidak menghasilkan keluaran")
+        try:
+            for raw in stream:
+                yield raw.decode("utf-8", errors="replace").rstrip("\n")
+        finally:
+            if proc.poll() is None:
+                proc.kill()
+            stream.close()
+            code = proc.wait()
+        if code != 0:
+            errors.seek(0)
+            lines = errors.read().decode("utf-8", errors="replace").strip().splitlines()
+            detail = lines[0] if lines else f"kode keluar {code}"
+            raise GitError(f"git log gagal: {detail}")
+
+
+def report_history(result: HistoryResult) -> None:
+    console = Console(stderr=True, highlight=False, emoji=False)
+
+    def out(*parts: str | tuple[str, str]) -> None:
+        console.print(Text.assemble(*parts), soft_wrap=True)
+
+    out(
+        ("secret-guard:", "bold red"),
+        f" {len(result.leaks)} secret ditemukan di riwayat "
+        f"({result.commits} commit dipindai)",
+    )
+    console.print()
+    current = None
+    for leak in sorted(result.leaks, key=lambda x: (x.path, x.date, x.line)):
+        if leak.path != current:
+            out((_clean(leak.path), "bold"))
+            current = leak.path
+        out(
+            f"  baris {leak.line:<5} ",
+            (f"{leak.rule:<20} ", "yellow"),
+            (_clean(leak.preview), "dim"),
+            f"  pertama di {_clean(leak.commit[:7])} ({_clean(leak.date)}), "
+            f"ada di {leak.commits} commit",
+        )
+    console.print()
+    out(("Anggap semua secret di atas SUDAH BOCOR:", "bold"))
+    out("  1. Cabut atau ganti (rotate) kuncinya sekarang. Ini yang terpenting.")
+    out("     Menghapusnya dari riwayat saja tidak cukup kalau repo pernah dibagikan")
+    out("     atau di-clone.")
+    out("  2. Lihat isi lengkapnya hanya di komputermu: git show <commit>:<path>")
+    out("  3. Setelah rotate, riwayat bisa dibersihkan dengan git filter-repo")
+    out("     (menulis ulang riwayat, semua kolaborator harus clone ulang).")
+    out(f"  4. False positive: tambahkan pola path di {IGNORE_FILE}.")
+
+
+def cmd_scan_history(*, max_commits: int | None, ignore_file: str | None) -> int:
+    try:
+        patterns = load_ignore(ignore_file)
+        shallow = is_shallow()
+        result = find_leaks(
+            split_commits(iter_log_lines(max_commits)),
+            lambda path: is_ignored(path, patterns),
+        )
+    except (GitError, IgnoreError) as e:
+        print(f"secret-guard: {e}", file=sys.stderr)
+        return EXIT_ERROR
+
+    if shallow:
+        print(
+            "secret-guard: peringatan: repositori dangkal (shallow), riwayat tidak lengkap",
+            file=sys.stderr,
+        )
+    if result.ignored:
+        print(
+            f"secret-guard: {result.ignored} temuan diabaikan oleh {IGNORE_FILE}",
+            file=sys.stderr,
+        )
+    if result.leaks:
+        report_history(result)
+        return EXIT_FINDINGS
+    print(f"secret-guard: bersih ({result.commits} commit dipindai)")
     return EXIT_OK
 
 
@@ -262,6 +378,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="pindahkan hook pre-commit lain ke cadangan lalu pasang hook ini",
     )
     sub.add_parser("uninstall-hook", help="hapus hook pre-commit milik secret-guard")
+
+    history = sub.add_parser(
+        "scan-history", help="pindai seluruh riwayat Git (semua cabang dan tag)"
+    )
+    history.add_argument(
+        "--max-commits", type=_positive_int, metavar="N", help="batasi ke N commit terbaru"
+    )
+    history.add_argument("--ignore-file", metavar="FILE", help=f"ganti {IGNORE_FILE}")
     return parser
 
 
@@ -273,4 +397,8 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.command == "install-hook":
         return cmd_install_hook(force=args.force)
+    if args.command == "scan-history":
+        return cmd_scan_history(
+            max_commits=args.max_commits, ignore_file=args.ignore_file
+        )
     return cmd_uninstall_hook()

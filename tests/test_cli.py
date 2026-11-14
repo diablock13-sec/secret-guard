@@ -312,3 +312,85 @@ def test_report_respects_no_colour(monkeypatch, capsys):
     monkeypatch.setenv("FORCE_COLOR", "1")
     monkeypatch.setenv("NO_COLOR", "1")
     assert "\x1b[3" not in scan_output(monkeypatch, capsys, "config.py")
+
+
+# ---- scan-history ----
+
+
+def commit_file(repo, name, text, msg="c"):
+    (repo / name).write_text(text)
+    git("add", name)
+    assert git("commit", "-m", msg).returncode == 0
+
+
+def first_commit():
+    return git("rev-list", "--max-parents=0", "HEAD").stdout.split()[0]
+
+
+def test_history_finds_secret_that_was_later_removed(repo, capsys):
+    commit_file(repo, "config.py", f'KEY = "{SECRET}"\n', "tambah kunci")
+    first = first_commit()
+    commit_file(repo, "config.py", "KEY = None\n", "hapus kunci")
+    assert main(["scan"]) == 0  # yang di-stage bersih, tapi riwayatnya tidak
+    capsys.readouterr()
+    assert main(["scan-history"]) == 1
+    err = capsys.readouterr().err
+    assert "config.py" in err
+    assert "aws-access-key-id" in err
+    assert first[:7] in err
+    assert "SUDAH BOCOR" in err
+    assert SECRET not in err
+
+
+def test_history_counts_commits_where_secret_was_added(repo, capsys):
+    commit_file(repo, "config.py", f'KEY = "{SECRET}"\n', "a")
+    commit_file(repo, "config.py", "KEY = None\n", "b")
+    commit_file(repo, "config.py", f'KEY = "{SECRET}"\n', "c")
+    assert main(["scan-history"]) == 1
+    err = capsys.readouterr().err
+    assert "1 secret ditemukan" in err
+    assert "ada di 2 commit" in err
+
+
+def test_history_scans_other_branches(repo):
+    commit_file(repo, "a.txt", "halo\n", "awal")
+    assert git("checkout", "-b", "rahasia").returncode == 0
+    commit_file(repo, "config.py", f'KEY = "{SECRET}"\n', "kunci di cabang")
+    assert git("checkout", "-").returncode == 0
+    assert not (repo / "config.py").exists()
+    assert main(["scan-history"]) == 1
+
+
+def test_history_clean_repo(repo, capsys):
+    commit_file(repo, "a.txt", "halo\n", "awal")
+    assert main(["scan-history"]) == 0
+    assert "1 commit dipindai" in capsys.readouterr().out
+
+
+def test_history_max_commits_limits_scope(repo):
+    commit_file(repo, "config.py", f'KEY = "{SECRET}"\n', "tambah kunci")
+    commit_file(repo, "config.py", "KEY = None\n", "hapus kunci")
+    commit_file(repo, "lain.txt", "halo\n", "lain")
+    assert main(["scan-history", "--max-commits", "2"]) == 0
+    assert main(["scan-history"]) == 1
+
+
+def test_history_max_commits_must_be_positive():
+    with pytest.raises(SystemExit) as info:
+        main(["scan-history", "--max-commits", "0"])
+    assert info.value.code == 2
+
+
+def test_history_respects_ignore_file(repo, capsys):
+    commit_file(repo, "config.py", f'KEY = "{SECRET}"\n', "tambah kunci")
+    (repo / ".secretguardignore").write_text("config.py\n")
+    assert main(["scan-history"]) == 0
+    assert "1 temuan diabaikan" in capsys.readouterr().err
+
+
+def test_history_outside_repo_is_error(tmp_path, capsys):
+    plain = tmp_path / "plain"
+    plain.mkdir()
+    os.chdir(plain)
+    assert main(["scan-history"]) == 2
+    assert "secret-guard:" in capsys.readouterr().err
