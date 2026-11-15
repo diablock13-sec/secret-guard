@@ -107,7 +107,8 @@ Dua kegagalan yang diketahui:
 - Hook bisa dilewati dengan `--no-verify` dan hanya berlaku lokal.
 - Belum terintegrasi dengan kerangka `pre-commit`.
 - Kinerja di repo besar belum diukur.
-- Belum dibandingkan berdampingan dengan alat lain pada data yang sama.
+- Perbandingan berdampingan baru dengan gitleaks, pada korpus yang ditulis untuk
+  secret-guard (lihat bagian di bawah). TruffleHog belum dibandingkan.
 
 ## Dibandingkan dengan alat lain
 
@@ -119,7 +120,38 @@ Dua kegagalan yang diketahui:
   yang tidak membocorkan rahasia, dan evaluasi yang jujur dengan angka. Cocok
   untuk belajar atau repo pribadi berisiko rendah, bukan menggantikan alat di atas.
 
-Perbandingan hasil berdampingan dengan gitleaks belum dilakukan.
+### Perbandingan berdampingan dengan gitleaks
+
+Korpus 47 kasus yang sama dijalankan lewat gitleaks 8.26.0 (paket Kali, aturan
+bawaan, tanpa konfigurasi). Tiap kasus ditulis ke satu berkas berisi satu baris,
+lalu dinilai dengan aturan yang sama seperti secret-guard. Ulangi dengan
+`uv run python eval/bandingkan_gitleaks.py`. Hasil ada di `eval/hasil-gitleaks.txt`.
+
+| alat | TP | FP | FN | TN | precision | recall |
+|------|----|----|----|----|-----------|--------|
+| secret-guard | 18 | 1 | 1 | 27 | 0,95 | 0,95 |
+| gitleaks 8.26.0 | 15 | 3 | 4 | 25 | 0,83 | 0,79 |
+
+**Jangan baca ini sebagai bukti secret-guard lebih baik.** Korpus ditulis oleh
+penulis secret-guard, dan kelompok `didukung` dibuat dari aturannya sendiri, jadi
+hasilnya condong ke alat ini. Korpusnya kecil, dan satu baris per berkas tidak
+sama dengan memindai repo sungguhan. Angka ini hanya menunjukkan bagaimana kedua
+alat berperilaku pada 47 kasus ini.
+
+Perbedaan per kasus:
+
+- **Hanya gitleaks yang menangkap:** `dotenv-unquoted-password`. Ini celah nyata
+  secret-guard yang sudah tercatat di atas.
+- **Hanya secret-guard yang menangkap:** `github-pat`, `telegram-bot`,
+  `private-key-header`, dan `db-url-password`. Alasan gitleaks melewatkannya belum
+  diselidiki. Dugaan: kasus satu baris merugikan aturan yang butuh konteks
+  (misalnya blok kunci privat). Itu dugaan, belum diuji.
+- **Salah alarm di keduanya:** `uuid-session-token`.
+- **Salah alarm hanya di gitleaks:** `sha-named-token` dan `stripe-test-key`.
+  Label "aman" untuk kunci uji Stripe adalah penilaian penulis korpus.
+
+Untuk repo sungguhan, gitleaks tetap pilihan yang lebih tepat. TruffleHog belum
+dibandingkan.
 
 ## Pengembangan
 
