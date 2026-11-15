@@ -84,11 +84,41 @@ def secret_fingerprint(secret: str) -> str:
     return hashlib.sha256(secret.encode()).hexdigest()[:16]
 
 
+PATH_OR_URL = re.compile(r"^(?:/|\./|\.\./|~/|[A-Za-z][A-Za-z0-9+.-]*://)")
+# Kata di nama kunci yang menandakan nilainya bukan kredensial (diperiksa per kata,
+# supaya 'shared_secret' tidak salah dikira memuat 'sha').
+NON_SECRET_NAME_WORDS = frozenset(
+    {"hash", "md5", "checksum", "digest", "etag", "commit", "uuid", "guid"}
+)
+
+
+def is_word_identifier(value: str) -> bool:
+    """Nama bergaya kode: tiga kata atau lebih dari huruf saja, dipisah '-' atau '_'."""
+    parts = [p for p in re.split(r"[-_]+", value) if p]
+    return len(parts) >= 3 and all(p.isalpha() for p in parts)
+
+
+def is_hash_like_name(name: str) -> bool:
+    return any(
+        part in NON_SECRET_NAME_WORDS or re.fullmatch(r"sha\d*", part)
+        for part in re.split(r"[_-]+", name.lower())
+    )
+
+
+def key_name(text: str, match: re.Match[str]) -> str:
+    """Nama kunci lengkap, termasuk awalan di luar kecocokan ('sha256_' pada 'sha256_token')."""
+    prefix = re.search(r"[\w-]*$", text[: match.start()])
+    inner = re.match(r"[\w-]*", match.group(0))
+    return (prefix.group(0) if prefix else "") + (inner.group(0) if inner else "")
+
+
 def looks_random(value: str) -> bool:
     if len(value) < VALUE_MIN_LEN:
         return False
     lowered = value.lower()
     if any(hint in lowered for hint in PLACEHOLDER_HINTS):
+        return False
+    if PATH_OR_URL.match(value) or is_word_identifier(value):
         return False
     classes = sum(any(check(c) for c in value) for check in (str.islower, str.isupper, str.isdigit))
     if classes < 2:
@@ -115,6 +145,8 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
         start, end = m.span(1)
         if any(s <= start and end <= e for s, e in spans):
             continue  # sudah tertangkap aturan yang lebih spesifik
+        if is_hash_like_name(key_name(text, m)):
+            continue
         if looks_random(m.group(1)):
             secret = m.group(1)
             findings.append(
