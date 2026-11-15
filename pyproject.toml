@@ -1,6 +1,6 @@
 [project]
 name = "secret-guard"
-version = "0.1.0"
+version = "0.1.1"
 description = "Pemindai secret pada diff Git, memblokir commit yang memuat kunci atau password"
 authors = [
     { name = "diablock13-sec", email = "diablock13@gmail.com" }
