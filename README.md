@@ -72,30 +72,37 @@ Berkas `.secretguardignore` berisi pola path, satu per baris. Aturannya:
 
 ## Evaluasi
 
-Korpus 47 kasus di `eval/corpus.jsonl`. Nilai rahasia di berkas itu **dirakit dari
+Korpus 55 kasus di `eval/corpus.jsonl`. Nilai rahasia di berkas itu **dirakit dari
 potongan** saat dimuat, dan sebuah test memastikan nilai utuhnya tidak pernah
 tertulis di berkas, jadi repo ini tidak memuat teks yang mirip kunci sungguhan.
-Hasil akhir ada di `eval/hasil-final.txt`:
+Hasil terbaru ada di `eval/hasil-v0.1.1.txt`. Hasil v0.1.0 (47 kasus) tetap
+tersimpan di `eval/hasil-final.txt`.
 
 | kelompok | kasus | TP | FP | FN | TN |
 |----------|-------|----|----|----|----|
-| didukung | 12 | 12 | 0 | 0 | 0 |
+| didukung | 13 | 13 | 0 | 0 | 0 |
 | heuristik | 6 | 6 | 0 | 0 | 0 |
-| aman | 17 | 0 | 0 | 0 | 17 |
-| aman-sulit | 11 | 0 | 1 | 0 | 10 |
-| belum-didukung | 1 | 0 | 0 | 1 | 0 |
-| **semua** | **47** | **18** | **1** | **1** | **27** |
+| aman | 19 | 0 | 0 | 0 | 19 |
+| aman-sulit | 17 | 0 | 1 | 0 | 16 |
+| **semua** | **55** | **19** | **1** | **0** | **35** |
 
-Precision 0,95 dan recall 0,95. Perjalanannya: awal precision 0,71 dan recall 0,59,
-putaran kedua 0,80 dan 0,94, putaran ketiga 0,95 dan 0,95.
+Precision 0,95 dan recall 1,00. Perjalanannya: awal precision 0,71 dan recall 0,59,
+putaran kedua 0,80 dan 0,94, putaran ketiga 0,95 dan 0,95, lalu v0.1.1 (aturan
+untuk nilai tanpa tanda kutip di file bergaya `.env`) 0,95 dan 1,00.
 
 Baca angka ini dengan hati-hati. Korpus ditulis oleh penulis yang juga menyetel
-aturannya, jadi angkanya optimistis. Korpus kecil dan belum berisi repo sungguhan.
+aturannya, jadi angkanya optimistis. Recall 1,00 khususnya hanya berlaku pada
+sampel: aturan `.env` ditulis setelah kasusnya terlihat gagal, dan delapan kasus
+aman baru ditambahkan sesudah aturan itu ada. Delapan kasus itu hanya membuktikan
+aturan baru tidak merusak kasus yang terpikirkan, bukan bentuk `.env` lain.
+Korpus kecil dan belum berisi repo sungguhan.
 
-Dua kegagalan yang diketahui:
+Kegagalan yang diketahui:
 
 - Salah alarm: `session_token = "<UUID>"` dianggap rahasia oleh pendeteksi umum.
-- Terlewat: kata sandi di file bergaya `.env` tanpa tanda kutip belum didukung.
+- Aturan nilai tanpa kutip sengaja sempit. Tidak tercakup: nilai YAML tanpa kutip
+  (`password: nilai`), nilai dengan spasi di sekitar `=`, nama kunci yang tidak di
+  awal baris, dan nilai yang diawali `$`.
 
 ## Keterbatasan
 
@@ -122,33 +129,41 @@ Dua kegagalan yang diketahui:
 
 ### Perbandingan berdampingan dengan gitleaks
 
-Korpus 47 kasus yang sama dijalankan lewat gitleaks 8.26.0 (paket Kali, aturan
+Korpus 55 kasus yang sama dijalankan lewat gitleaks 8.26.0 (paket Kali, aturan
 bawaan, tanpa konfigurasi). Tiap kasus ditulis ke satu berkas berisi satu baris,
 lalu dinilai dengan aturan yang sama seperti secret-guard. Ulangi dengan
 `uv run python eval/bandingkan_gitleaks.py`. Hasil ada di `eval/hasil-gitleaks.txt`.
 
 | alat | TP | FP | FN | TN | precision | recall |
 |------|----|----|----|----|-----------|--------|
-| secret-guard | 18 | 1 | 1 | 27 | 0,95 | 0,95 |
-| gitleaks 8.26.0 | 15 | 3 | 4 | 25 | 0,83 | 0,79 |
+| secret-guard | 19 | 1 | 0 | 35 | 0,95 | 1,00 |
+| gitleaks 8.26.0 | 15 | 4 | 4 | 32 | 0,79 | 0,79 |
 
 **Jangan baca ini sebagai bukti secret-guard lebih baik.** Korpus ditulis oleh
 penulis secret-guard, dan kelompok `didukung` dibuat dari aturannya sendiri, jadi
 hasilnya condong ke alat ini. Korpusnya kecil, dan satu baris per berkas tidak
-sama dengan memindai repo sungguhan. Angka ini hanya menunjukkan bagaimana kedua
-alat berperilaku pada 47 kasus ini.
+sama dengan memindai repo sungguhan. Dua catatan tambahan:
+
+- Pada perbandingan 47 kasus sebelumnya, gitleaks tercatat 0,83 dan 0,79. Turunnya
+  precision ke 0,79 **bukan perubahan gitleaks**: alat dan versinya sama, hanya
+  korpusnya yang bertambah.
+- Salah alarm baru gitleaks, `dotenv-checksum-name`, berasal dari kasus yang
+  ditulis untuk menguji filter nama-hash milik secret-guard. Kasus itu tidak adil
+  dihitung sebagai kekurangan gitleaks.
 
 Perbedaan per kasus:
 
-- **Hanya gitleaks yang menangkap:** `dotenv-unquoted-password`. Ini celah nyata
-  secret-guard yang sudah tercatat di atas.
 - **Hanya secret-guard yang menangkap:** `github-pat`, `telegram-bot`,
   `private-key-header`, dan `db-url-password`. Alasan gitleaks melewatkannya belum
   diselidiki. Dugaan: kasus satu baris merugikan aturan yang butuh konteks
   (misalnya blok kunci privat). Itu dugaan, belum diuji.
 - **Salah alarm di keduanya:** `uuid-session-token`.
-- **Salah alarm hanya di gitleaks:** `sha-named-token` dan `stripe-test-key`.
-  Label "aman" untuk kunci uji Stripe adalah penilaian penulis korpus.
+- **Salah alarm hanya di gitleaks:** `sha-named-token`, `stripe-test-key`, dan
+  `dotenv-checksum-name` (lihat catatan di atas). Label "aman" untuk kunci uji
+  Stripe adalah penilaian penulis korpus.
+- **Hanya gitleaks yang menangkap:** tidak ada lagi pada korpus ini. Sebelum
+  v0.1.1, `dotenv-unquoted-password` hanya tertangkap gitleaks. Celah itu ditutup
+  dengan aturan baru, dan penutupannya disetel setelah kasusnya terlihat.
 
 Untuk repo sungguhan, gitleaks tetap pilihan yang lebih tepat. TruffleHog belum
 dibandingkan.

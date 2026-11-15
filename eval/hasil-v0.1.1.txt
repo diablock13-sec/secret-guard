@@ -1,0 +1,13 @@
+kelompok         kasus   TP   FP   FN   TN  precision  recall
+SEMUA               55   19    1    0   35       0.95    1.00
+aman                19    0    0    0   19          -       -
+aman-sulit          17    0    1    0   16       0.00       -
+didukung            13   13    0    0    0       1.00    1.00
+heuristik            6    6    0    0    0       1.00    1.00
+
+Terlewat (FN), 0:
+  (tidak ada)
+
+Salah alarm (FP), 1:
+  uuid-session-token  [aman-sulit]  oleh generic-secret
+    session_token = "f47ac10b-58cc-4372-a567-0e02b2c3d479"

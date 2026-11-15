@@ -67,6 +67,14 @@ GENERIC = re.compile(
     r"""(?i)(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]*["']?\s*[:=]\s*["']([^"'\s]{16,})["']"""
 )
 
+# Bentuk dotenv: NAMA=nilai tanpa spasi dan tanpa kutip. Sengaja sempit supaya kode
+# seperti "token = get_token_x1" (pakai spasi) dan ekspresi tidak ikut tertangkap.
+GENERIC_UNQUOTED = re.compile(
+    r"""(?im)^\s*(?:export\s+)?"""
+    r"""(?P<name>[\w-]*(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]*)"""
+    r"""=(?!\$)(?P<value>[^\s"'`#<>()\[\]{},;]{16,})\s*(?:#.*)?$"""
+)
+
 
 def shannon_entropy(s: str) -> float:
     if not s:
@@ -149,6 +157,20 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
             continue
         if looks_random(m.group(1)):
             secret = m.group(1)
+            findings.append(
+                Finding(
+                    "generic-secret", path, line_no, mask(secret), secret_fingerprint(secret)
+                )
+            )
+
+    for m in GENERIC_UNQUOTED.finditer(text):
+        start, end = m.span("value")
+        if any(s <= start and end <= e for s, e in spans):
+            continue
+        if is_hash_like_name(m.group("name")):
+            continue
+        if looks_random(m.group("value")):
+            secret = m.group("value")
             findings.append(
                 Finding(
                     "generic-secret", path, line_no, mask(secret), secret_fingerprint(secret)

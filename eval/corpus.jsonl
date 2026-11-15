@@ -14,7 +14,7 @@
 {"id": "google-api-key", "label": "secret", "group": "didukung", "line": "maps_key = \"{S}\"", "parts": ["AIza", "SyD3k9QxLmP2vRtW7zYb4HnCe8UaFs1GoXi"]}
 {"id": "bearer-jwt", "label": "secret", "group": "didukung", "line": "Authorization: Bearer {S}", "parts": ["eyJhbGciOiJIUzI1NiJ9.", "eyJzdWIiOiIxMjM0NTY3ODkwIn0.", "k3Jd9QxLmP2vRtW7zYb4HnCe8UaFs1GoXi5"]}
 {"id": "db-url-password", "label": "secret", "group": "didukung", "line": "DATABASE_URL = \"postgres://admin:{S}@db.internal:5432/app\"", "parts": ["t8Kq2ZmX9vLp", "4RwYc7Nb"]}
-{"id": "dotenv-unquoted-password", "label": "secret", "group": "belum-didukung", "line": "DB_PASSWORD={S}", "parts": ["Zx7Qm4Lp9vRt", "2WbNc8Kd"]}
+{"id": "dotenv-unquoted-password", "label": "secret", "group": "didukung", "line": "DB_PASSWORD={S}", "parts": ["Zx7Qm4Lp9vRt", "2WbNc8Kd"]}
 {"id": "env-lookup", "label": "safe", "group": "aman", "line": "api_key = os.environ[\"API_KEY\"]"}
 {"id": "placeholder-dash", "label": "safe", "group": "aman", "line": "API_KEY = \"your-api-key-here\""}
 {"id": "placeholder-angle", "label": "safe", "group": "aman", "line": "token = \"<YOUR_TOKEN_HERE_REPLACE_ME>\""}
@@ -45,3 +45,11 @@
 {"id": "stripe-test-key", "label": "safe", "group": "aman-sulit", "line": "STRIPE_KEY = \"{S}\"", "parts": ["sk_te", "st_4eC39HqLyjWDarjtT1zdp7dc"]}
 {"id": "generic-slash-in-secret", "label": "secret", "group": "heuristik", "line": "api_key = \"{S}\"", "parts": ["wJalrXUtnFEMI/K7", "MDENG/bPxRfiCYk"]}
 {"id": "github-legacy-hex-token", "label": "secret", "group": "heuristik", "line": "github_token = \"{S}\"", "parts": ["dc3767b7a5785fe3f9", "ab3d21211f4f4409681cd6"]}
+{"id": "dotenv-port-short", "label": "safe", "group": "aman", "line": "PORT=8080"}
+{"id": "dotenv-var-reference", "label": "safe", "group": "aman", "line": "SECRET_KEY=${SECRET_KEY_FROM_VAULT}"}
+{"id": "dotenv-url-value", "label": "safe", "group": "aman-sulit", "line": "AUTH_ENDPOINT=https://login.example.com/oauth2/authorize"}
+{"id": "dotenv-path-value", "label": "safe", "group": "aman-sulit", "line": "DB_PASSWORD_FILE=/run/secrets/db_password_file"}
+{"id": "dotenv-word-identifier", "label": "safe", "group": "aman-sulit", "line": "TOKEN_KIND=refresh-access-token-value"}
+{"id": "dotenv-checksum-name", "label": "safe", "group": "aman-sulit", "line": "BUILD_CHECKSUM_TOKEN=a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"}
+{"id": "dotenv-placeholder", "label": "safe", "group": "aman-sulit", "line": "API_KEY=your_api_key_goes_here_please"}
+{"id": "python-spaced-assign", "label": "safe", "group": "aman-sulit", "line": "token = fetch_remote_token_v2(user_id)"}
