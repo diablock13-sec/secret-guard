@@ -44,4 +44,4 @@
 {"id": "google-key-doc", "label": "safe", "group": "aman", "line": "# Google API keys start with AIza and are 39 characters long"}
 {"id": "stripe-test-key", "label": "safe", "group": "aman-sulit", "line": "STRIPE_KEY = \"{S}\"", "parts": ["sk_te", "st_4eC39HqLyjWDarjtT1zdp7dc"]}
 {"id": "generic-slash-in-secret", "label": "secret", "group": "heuristik", "line": "api_key = \"{S}\"", "parts": ["wJalrXUtnFEMI/K7", "MDENG/bPxRfiCYk"]}
-{"id": "github-legacy-hex-token", "label": "secret", "group": "heuristik", "line": "github_token = \"{S}\"", "parts": ["9fceb02d0ae598e95d", "c970b74767f19372d61af8"]}
+{"id": "github-legacy-hex-token", "label": "secret", "group": "heuristik", "line": "github_token = \"{S}\"", "parts": ["dc3767b7a5785fe3f9", "ab3d21211f4f4409681cd6"]}
