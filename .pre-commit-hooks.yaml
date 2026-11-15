@@ -1,0 +1,8 @@
+- id: secret-guard
+  name: secret-guard
+  description: Blokir commit yang memuat API key, token, atau kata sandi.
+  entry: secret-guard scan
+  language: python
+  pass_filenames: false
+  always_run: true
+  minimum_pre_commit_version: "2.9.0"

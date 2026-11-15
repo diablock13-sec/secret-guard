@@ -50,6 +50,25 @@ Perilaku yang disengaja:
 - Hook hanya berlaku di mesin lokal. `git commit --no-verify` melewatinya, dan
   tidak ada pemeriksaan di sisi server.
 
+### Lewat kerangka pre-commit
+
+Kalau proyekmu sudah memakai [pre-commit](https://pre-commit.com/), tambahkan ke
+`.pre-commit-config.yaml`:
+
+```yaml
+repos:
+  - repo: https://github.com/diablock13-sec/secret-guard
+    rev: v0.1.1
+    hooks:
+      - id: secret-guard
+```
+
+Hook ini menjalankan `secret-guard scan` pada perubahan yang sudah di-`git add`
+dan tidak memakai daftar nama file dari pre-commit. Diuji dengan
+`pre-commit try-repo`: commit bersih lolos, commit berisi nilai mirip rahasia
+ditolak dengan kode keluar 1. Hook hanya berlaku di mesin yang memasangnya dan
+tetap bisa dilewati dengan `--no-verify`.
+
 ## Yang dideteksi
 
 Aturan berbentuk jelas: `aws-access-key-id`, `github-token`, `slack-token`, `telegram-bot-token`, `private-key`, `stripe-secret-key`, `google-api-key`, `jwt`, `url-credentials`.
@@ -112,7 +131,6 @@ Kegagalan yang diketahui:
   ditemukan oleh `scan-history`. **Rahasia yang pernah ter-push harus dicabut
   dan diganti**, menghapusnya dari berkas tidak cukup.
 - Hook bisa dilewati dengan `--no-verify` dan hanya berlaku lokal.
-- Belum terintegrasi dengan kerangka `pre-commit`.
 - Kinerja di repo besar belum diukur.
 - Perbandingan berdampingan baru dengan gitleaks, pada korpus yang ditulis untuk
   secret-guard (lihat bagian di bawah). TruffleHog belum dibandingkan.

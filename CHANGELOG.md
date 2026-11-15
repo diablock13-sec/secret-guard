@@ -2,12 +2,13 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/), versi mengikuti [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [0.1.1] - 2026-11-15
 
 ### Ditambahkan
 - Aturan untuk nilai tanpa tanda kutip di file bergaya `.env` (`NAMA=nilai`, tanpa spasi), dengan filter yang sama seperti pendeteksi umum.
 - Korpus evaluasi 55 kasus (delapan kasus aman bentuk `.env` ditambah). Precision 0,95 dan recall 1,00 pada sampel itu.
 - Perbandingan berdampingan dengan gitleaks 8.26.0 (`eval/bandingkan_gitleaks.py`), dengan peringatan bias korpus di README.
+- Kompatibel dengan kerangka `pre-commit` lewat `.pre-commit-hooks.yaml`, diuji dengan `pre-commit try-repo`.
 
 ## [0.1.0] - 2026-11-15
 
