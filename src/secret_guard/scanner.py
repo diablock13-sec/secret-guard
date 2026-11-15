@@ -47,10 +47,24 @@ RULES = (
             r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY(?: BLOCK)?-----"
         ),
     ),
+    Rule("stripe-secret-key", re.compile(r"\b[sr]k_live_[0-9A-Za-z]{24,99}\b")),
+    Rule("google-api-key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_-])")),
+    Rule(
+        "jwt",
+        re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}"),
+    ),
+    Rule(
+        "url-credentials",
+        re.compile(
+            r"""(?i)\b[a-z][a-z0-9+.-]{1,20}://[^\s:/@"']{1,64}:"""
+            r"""(?!(?:pass(?:word)?|pwd|secret|changeme|example|x{3,}|\*+|your|<|\{|\$)[^\s@/"']*@)"""
+            r"""[^\s@/"']{8,}@"""
+        ),
+    ),
 )
 
 GENERIC = re.compile(
-    r"""(?i)(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]*\s*[:=]\s*["']([^"'\s]{16,})["']"""
+    r"""(?i)(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]*["']?\s*[:=]\s*["']([^"'\s]{16,})["']"""
 )
 
 
