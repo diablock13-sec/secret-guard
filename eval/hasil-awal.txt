@@ -1,0 +1,26 @@
+kelompok         kasus   TP   FP   FN   TN  precision  recall
+SEMUA               37   10    4    7   16       0.71    0.59
+aman                13    0    0    0   13          -       -
+aman-sulit           7    0    4    0    3       0.00       -
+belum-didukung       5    0    0    5    0          -    0.00
+didukung             8    8    0    0    0       1.00    1.00
+heuristik            4    2    0    2    0       1.00    0.50
+
+Terlewat (FN), 7:
+  generic-json-client-secret  [heuristik]
+  generic-json-password  [heuristik]
+  stripe-live  [belum-didukung]
+  google-api-key  [belum-didukung]
+  bearer-jwt  [belum-didukung]
+  db-url-password  [belum-didukung]
+  dotenv-unquoted-password  [belum-didukung]
+
+Salah alarm (FP), 4:
+  uuid-session-token  [aman-sulit]  oleh generic-secret
+    session_token = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+  sha-named-token  [aman-sulit]  oleh generic-secret
+    sha256_token = "9fceb02d0ae598e95dc970b74767f19372d61af8"
+  header-name  [aman-sulit]  oleh generic-secret
+    api_key_header = "X-Api-Key-Header-Name-Value"
+  ssh-auth-sock  [aman-sulit]  oleh generic-secret
+    ssh_auth_sock = "/run/user/1000/keyring/ssh-agent-socket-path"

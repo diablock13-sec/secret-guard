@@ -1,0 +1,37 @@
+{"id": "aws-akia", "label": "secret", "group": "didukung", "line": "aws_access_key_id = \"{S}\"", "parts": ["AKIA", "Q7XK2M9PLR4TWB6N"]}
+{"id": "aws-asia-yaml", "label": "secret", "group": "didukung", "line": "AWS_ACCESS_KEY_ID: {S}", "parts": ["ASIA", "ZP3V8NQ5LXC2KM7T"]}
+{"id": "github-ghp-url", "label": "secret", "group": "didukung", "line": "git clone https://{S}@github.com/acme/private.git", "parts": ["ghp_", "Xk3Jd9QxLmP2vRtW7zYb4HnCe8UaFs1GoXi5"]}
+{"id": "github-gho-env", "label": "secret", "group": "didukung", "line": "export GITHUB_TOKEN={S}", "parts": ["gho_", "Rt7Yk2Lm9Qx4Vb8Nc3Zd6Hf1Jg5Sw0PaEuTi"]}
+{"id": "github-pat", "label": "secret", "group": "didukung", "line": "GH_TOKEN = \"{S}\"", "parts": ["github_pat_", "11ABCDEFG0hijklMNOpqrst4"]}
+{"id": "slack-bot", "label": "secret", "group": "didukung", "line": "SLACK_BOT_TOKEN = \"{S}\"", "parts": ["xoxb-", "2837461950-8473619205-Qw3Er5Ty7Ui9Op1As"]}
+{"id": "telegram-bot", "label": "secret", "group": "didukung", "line": "bot_token = \"{S}\"", "parts": ["7340918265:", "AAHk3Jd9QxLmP2vRtW7zYb4HnCe8UaFs1Go"]}
+{"id": "private-key-header", "label": "secret", "group": "didukung", "line": "{S}", "parts": ["-----BEGIN RSA PRIV", "ATE KEY-----"]}
+{"id": "generic-api-key", "label": "secret", "group": "heuristik", "line": "api_key = \"{S}\"", "parts": ["t8Kq2ZmX9v", "Lp4RwYc7Nb"]}
+{"id": "generic-password-sq", "label": "secret", "group": "heuristik", "line": "password = '{S}'", "parts": ["Zx7Qm4Lp9v", "Rt2WbNc8Kd"]}
+{"id": "generic-json-client-secret", "label": "secret", "group": "heuristik", "line": "\"client_secret\": \"{S}\"", "parts": ["Vb5Nm8Qw2Z", "x4Lk7Jh3Gf"]}
+{"id": "generic-json-password", "label": "secret", "group": "heuristik", "line": "\"password\": \"{S}\"", "parts": ["Hd6Fs9Ap1O", "i3Uy7Tr5Ew"]}
+{"id": "stripe-live", "label": "secret", "group": "belum-didukung", "line": "STRIPE_KEY = \"{S}\"", "parts": ["sk_live_", "51Hx7Kq2ZmX9vLp4RwYc7Nb3"]}
+{"id": "google-api-key", "label": "secret", "group": "belum-didukung", "line": "maps_key = \"{S}\"", "parts": ["AIza", "SyD3k9QxLmP2vRtW7zYb4HnCe8UaFs1GoXi"]}
+{"id": "bearer-jwt", "label": "secret", "group": "belum-didukung", "line": "Authorization: Bearer {S}", "parts": ["eyJhbGciOiJIUzI1NiJ9.", "eyJzdWIiOiIxMjM0NTY3ODkwIn0.", "k3Jd9QxLmP2vRtW7zYb4HnCe8UaFs1GoXi5"]}
+{"id": "db-url-password", "label": "secret", "group": "belum-didukung", "line": "DATABASE_URL = \"postgres://admin:{S}@db.internal:5432/app\"", "parts": ["t8Kq2ZmX9vLp", "4RwYc7Nb"]}
+{"id": "dotenv-unquoted-password", "label": "secret", "group": "belum-didukung", "line": "DB_PASSWORD={S}", "parts": ["Zx7Qm4Lp9vRt", "2WbNc8Kd"]}
+{"id": "env-lookup", "label": "safe", "group": "aman", "line": "api_key = os.environ[\"API_KEY\"]"}
+{"id": "placeholder-dash", "label": "safe", "group": "aman", "line": "API_KEY = \"your-api-key-here\""}
+{"id": "placeholder-angle", "label": "safe", "group": "aman", "line": "token = \"<YOUR_TOKEN_HERE_REPLACE_ME>\""}
+{"id": "empty-password", "label": "safe", "group": "aman", "line": "password = \"\""}
+{"id": "comment-instruction", "label": "safe", "group": "aman", "line": "# set API_KEY in your .env file before running"}
+{"id": "jinja-template", "label": "safe", "group": "aman", "line": "secret_key = \"{{ vault_secret_key_value }}\""}
+{"id": "base64-image", "label": "safe", "group": "aman", "line": "<img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAX+XDSwAAAABJRU5ErkJggg==\">"}
+{"id": "aws-region", "label": "safe", "group": "aman", "line": "AWS_REGION = \"ap-southeast-3\""}
+{"id": "akia-in-comment", "label": "safe", "group": "aman", "line": "prefix = \"AKIA\"  # AWS key ids start with AKIA"}
+{"id": "token-getter", "label": "safe", "group": "aman", "line": "def get_token(request): return request.headers[\"Authorization\"]"}
+{"id": "bearer-fstring", "label": "safe", "group": "aman", "line": "auth_header = f\"Bearer {token}\""}
+{"id": "max-tokens", "label": "safe", "group": "aman", "line": "max_tokens = \"1000000000000000\""}
+{"id": "commit-sha", "label": "safe", "group": "aman", "line": "commit = \"9fceb02d0ae598e95dc970b74767f19372d61af8\""}
+{"id": "uuid-session-token", "label": "safe", "group": "aman-sulit", "line": "session_token = \"f47ac10b-58cc-4372-a567-0e02b2c3d479\""}
+{"id": "sha-named-token", "label": "safe", "group": "aman-sulit", "line": "sha256_token = \"9fceb02d0ae598e95dc970b74767f19372d61af8\""}
+{"id": "identifier-like-password", "label": "safe", "group": "aman-sulit", "line": "password_field = \"password_confirmation_field_name\""}
+{"id": "token-endpoint-url", "label": "safe", "group": "aman-sulit", "line": "token_url = \"https://api.example.com/v1/oauth/token/refresh\""}
+{"id": "header-name", "label": "safe", "group": "aman-sulit", "line": "api_key_header = \"X-Api-Key-Header-Name-Value\""}
+{"id": "ssh-auth-sock", "label": "safe", "group": "aman-sulit", "line": "ssh_auth_sock = \"/run/user/1000/keyring/ssh-agent-socket-path\""}
+{"id": "oauth-authorize-url", "label": "safe", "group": "aman-sulit", "line": "AUTH_URL = \"https://accounts.example.com/oauth2/authorize\""}
