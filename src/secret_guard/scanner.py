@@ -64,14 +64,14 @@ RULES = (
 )
 
 GENERIC = re.compile(
-    r"""(?i)(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]*["']?\s*[:=]\s*["']([^"'\s]{16,})["']"""
+    r"""(?i)(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]{0,64}["']?\s*[:=]\s*["']([^"'\s]{16,})["']"""
 )
 
 # Bentuk dotenv: NAMA=nilai tanpa spasi dan tanpa kutip. Sengaja sempit supaya kode
 # seperti "token = get_token_x1" (pakai spasi) dan ekspresi tidak ikut tertangkap.
 GENERIC_UNQUOTED = re.compile(
     r"""(?im)^\s*(?:export\s+)?"""
-    r"""(?P<name>[\w-]*(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]*)"""
+    r"""(?P<name>[\w-]{0,64}(?:api[_-]?key|secret|token|passw(?:or)?d|pwd|auth)[\w-]{0,64})"""
     r"""=(?!\$)(?P<value>[^\s"'`#<>()\[\]{},;]{16,})\s*(?:#.*)?$"""
 )
 

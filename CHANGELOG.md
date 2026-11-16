@@ -2,6 +2,17 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/), versi mengikuti [SemVer](https://semver.org/).
 
+## [0.1.2] - 2026-11-15
+
+### Diperbaiki
+- Dua pola umum (`GENERIC` dan `GENERIC_UNQUOTED`) berwaktu kuadratik pada baris panjang yang memuat kata kunci berulang. Contoh: 20.000 karakter `token` butuh sekitar 2,4 detik di v0.1.0 dan v0.1.1, dan 40.000 karakter sekitar 15 detik. Awalan dan akhiran nama kunci kini dibatasi 64 karakter, dan waktunya linear (40.000 karakter di bawah 0,05 detik).
+
+### Ditambahkan
+- Uji kinerja regex (`tests/test_regex_perf.py`).
+
+### Diketahui
+- Baris lebih panjang dari 10.000 karakter hanya dipindai 10.000 karakter pertamanya. Rahasia di luar batas itu tidak terdeteksi (terbukti pada uji dengan baris 12.000 karakter).
+
 ## [0.1.1] - 2026-11-15
 
 ### Ditambahkan

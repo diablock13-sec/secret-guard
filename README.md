@@ -58,7 +58,7 @@ Kalau proyekmu sudah memakai [pre-commit](https://pre-commit.com/), tambahkan ke
 ```yaml
 repos:
   - repo: https://github.com/diablock13-sec/secret-guard
-    rev: v0.1.1
+    rev: v0.1.2
     hooks:
       - id: secret-guard
 ```
@@ -131,7 +131,14 @@ Kegagalan yang diketahui:
   ditemukan oleh `scan-history`. **Rahasia yang pernah ter-push harus dicabut
   dan diganti**, menghapusnya dari berkas tidak cukup.
 - Hook bisa dilewati dengan `--no-verify` dan hanya berlaku lokal.
-- Kinerja di repo besar belum diukur.
+- Baris lebih panjang dari 10.000 karakter hanya dipindai 10.000 karakter
+  pertamanya. Rahasia setelah batas itu (misalnya di berkas hasil bundler satu
+  baris) tidak terdeteksi.
+- Kinerja pada satu mesin dan repo buatan (302 commit, 19 MB teks, satu baris
+  2 MB, biner 20 MB), jadi anggap sebagai gambaran kasar: `scan-history` sekitar
+  5 detik dan 129 MB memori, `scan` pada 19 MB teks yang di-stage sekitar 5 detik
+  dan 82 MB, pada biner 20 MB sekitar 0,2 detik. Memori kira-kira tiga kali
+  ukuran diff karena diff dibaca utuh. Repo sungguhan belum diukur.
 - Perbandingan berdampingan baru dengan gitleaks, pada korpus yang ditulis untuk
   secret-guard (lihat bagian di bawah). TruffleHog belum dibandingkan.
 
