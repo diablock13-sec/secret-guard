@@ -58,7 +58,7 @@ Kalau proyekmu sudah memakai [pre-commit](https://pre-commit.com/), tambahkan ke
 ```yaml
 repos:
   - repo: https://github.com/diablock13-sec/secret-guard
-    rev: v0.1.2
+    rev: v0.1.3
     hooks:
       - id: secret-guard
 ```

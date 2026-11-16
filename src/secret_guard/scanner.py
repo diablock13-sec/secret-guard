@@ -115,7 +115,7 @@ def is_hash_like_name(name: str) -> bool:
 
 def key_name(text: str, match: re.Match[str]) -> str:
     """Nama kunci lengkap, termasuk awalan di luar kecocokan ('sha256_' pada 'sha256_token')."""
-    prefix = re.search(r"[\w-]*$", text[: match.start()])
+    prefix = re.search(r"[\w-]*$", text[max(0, match.start() - 64) : match.start()])
     inner = re.match(r"[\w-]*", match.group(0))
     return (prefix.group(0) if prefix else "") + (inner.group(0) if inner else "")
 

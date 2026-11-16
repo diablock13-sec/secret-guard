@@ -21,3 +21,18 @@ def test_pattern_scales_linearly_on_repeated_keyword(name, unit):
 def test_key_name_suffix_within_limit_is_still_flagged():
     line = f'api_key_{"x" * 50} = "{SECRET}"'
     assert [f.rule for f in scan_line("a.py", 1, line)] == ["generic-secret"]
+
+
+def test_key_name_lookup_scales_linearly_before_keyword(monkeypatch):
+    # Lepas pemotongan baris supaya yang diukur hanya pencarian awalan nama kunci.
+    monkeypatch.setattr(scanner, "MAX_LINE_CHARS", 10**9)
+    line = "x" * 20_000 + f' api_key = "{SECRET}"'
+    start = time.perf_counter()
+    findings = scan_line("a.js", 1, line)
+    assert time.perf_counter() - start < LIMIT
+    assert [f.rule for f in findings] == ["generic-secret"]
+
+
+def test_hash_like_name_prefix_is_still_skipped():
+    hex40 = "9fceb02d0ae598e9" + "5dc970b74767f193" + "72d61af8"  # dirakit saat runtime
+    assert scan_line("a.py", 1, f'sha256_token = "{hex40}"') == []

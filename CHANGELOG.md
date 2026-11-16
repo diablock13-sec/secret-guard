@@ -2,6 +2,17 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/), versi mengikuti [SemVer](https://semver.org/).
 
+## [0.1.3] - 2026-11-15
+
+### Diperbaiki
+- Pencarian awalan nama kunci (`key_name`) berwaktu kuadratik pada deretan panjang sebelum kata kunci. Satu baris 10.000 karakter butuh sekitar 0,7 detik di v0.1.2 dan 13 detik pada 40.000 karakter. Kini dibatasi 64 karakter ke belakang, dan waktunya linear (40.000 karakter sekitar 0,014 detik). Catatan v0.1.2 menyebut waktunya sudah linear, dan itu keliru untuk pola ini.
+
+### Ditambahkan
+- Uji yang menjaga pencarian awalan nama kunci tetap linear, dan uji yang menjaga filter nama-hash tetap bekerja.
+
+### Diketahui
+- Baris lebih panjang dari 10.000 karakter hanya dipindai 10.000 karakter pertamanya. Rahasia di luar batas itu tidak terdeteksi. Pengukuran menunjukkan pemindaian tanpa batas itu linear sampai 2 MB, jadi celah ini bisa ditutup di rilis berikutnya.
+
 ## [0.1.2] - 2026-11-15
 
 ### Diperbaiki
