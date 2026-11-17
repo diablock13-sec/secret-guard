@@ -143,7 +143,9 @@ Kegagalan yang diketahui:
   7 detik dan 129 MB memori (diukur ulang di v0.1.4), `scan` pada 19 MB teks
   yang di-stage sekitar 5 detik dan 82 MB, pada biner 20 MB sekitar 0,2 detik
   (dua angka terakhir dari v0.1.3, belum diukur ulang). Memori kira-kira tiga kali
-  ukuran diff karena diff dibaca utuh. Repo sungguhan belum diukur.
+  ukuran diff karena diff dibaca utuh. Dua repo sungguhan kecil (344 dan 56 commit, di bawah 2 MB teks diff)
+  diukur pada satu mesin: keduanya bersih dan sekitar 0,5 detik, tetapi waktu itu
+  didominasi waktu mulai program, jadi bukan ukuran beban. Repo besar belum diukur.
 - Perbandingan berdampingan baru dengan gitleaks, pada korpus yang ditulis untuk
   secret-guard (lihat bagian di bawah). TruffleHog belum dibandingkan.
 
