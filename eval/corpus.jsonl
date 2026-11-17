@@ -2,7 +2,7 @@
 {"id": "aws-asia-yaml", "label": "secret", "group": "didukung", "line": "AWS_ACCESS_KEY_ID: {S}", "parts": ["ASIA", "ZP3V8NQ5LXC2KM7T"]}
 {"id": "github-ghp-url", "label": "secret", "group": "didukung", "line": "git clone https://{S}@github.com/acme/private.git", "parts": ["ghp_", "Xk3Jd9QxLmP2vRtW7zYb4HnCe8UaFs1GoXi5"]}
 {"id": "github-gho-env", "label": "secret", "group": "didukung", "line": "export GITHUB_TOKEN={S}", "parts": ["gho_", "Rt7Yk2Lm9Qx4Vb8Nc3Zd6Hf1Jg5Sw0PaEuTi"]}
-{"id": "github-pat", "label": "secret", "group": "didukung", "line": "GH_TOKEN = \"{S}\"", "parts": ["github_pat_", "11ABCDEFG0hijklMNOpqrst4"]}
+{"id": "github-pat", "label": "secret", "group": "didukung", "line": "GH_TOKEN = \"{S}\"", "parts": ["github_pat_", "2jbomnvtnwDda5VwssETh6_GUzElit", "QQIL59I6iNp61JkLNSSQmIgieNefhi", "GlhKsTWJSktveeK02kwOwj"]}
 {"id": "slack-bot", "label": "secret", "group": "didukung", "line": "SLACK_BOT_TOKEN = \"{S}\"", "parts": ["xoxb-", "2837461950-8473619205-Qw3Er5Ty7Ui9Op1As"]}
 {"id": "telegram-bot", "label": "secret", "group": "didukung", "line": "bot_token = \"{S}\"", "parts": ["7340918265:", "AAHk3Jd9QxLmP2vRtW7zYb4HnCe8UaFs1Go"]}
 {"id": "private-key-header", "label": "secret", "group": "didukung", "line": "{S}", "parts": ["-----BEGIN RSA PRIV", "ATE KEY-----"]}

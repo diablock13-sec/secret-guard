@@ -15,14 +15,13 @@ Salah alarm (FP), 1:
 
 == gitleaks (paket Kali 8.26.0, aturan bawaan) ==
 kelompok         kasus   TP   FP   FN   TN  precision  recall
-SEMUA               55   15    4    4   32       0.79    0.79
+SEMUA               55   16    4    3   32       0.80    0.84
 aman                19    0    0    0   19          -       -
 aman-sulit          17    0    4    0   13       0.00       -
-didukung            13    9    0    4    0       1.00    0.69
+didukung            13   10    0    3    0       1.00    0.77
 heuristik            6    6    0    0    0       1.00    1.00
 
-Terlewat (FN), 4:
-  github-pat  [didukung]
+Terlewat (FN), 3:
   telegram-bot  [didukung]
   private-key-header  [didukung]
   db-url-password  [didukung]

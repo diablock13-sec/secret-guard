@@ -171,29 +171,31 @@ lalu dinilai dengan aturan yang sama seperti secret-guard. Ulangi dengan
 | alat | TP | FP | FN | TN | precision | recall |
 |------|----|----|----|----|-----------|--------|
 | secret-guard | 19 | 1 | 0 | 35 | 0,95 | 1,00 |
-| gitleaks 8.26.0 | 15 | 4 | 4 | 32 | 0,79 | 0,79 |
+| gitleaks 8.26.0 | 16 | 4 | 3 | 32 | 0,80 | 0,84 |
 
 **Jangan baca ini sebagai bukti secret-guard lebih baik.** Korpus ditulis oleh
 penulis secret-guard, dan kelompok `didukung` dibuat dari aturannya sendiri, jadi
 hasilnya condong ke alat ini. Korpusnya kecil, dan satu baris per berkas tidak
 sama dengan memindai repo sungguhan. Dua catatan tambahan:
 
-- Pada perbandingan 47 kasus sebelumnya, gitleaks tercatat 0,83 dan 0,79. Turunnya
-  precision ke 0,79 **bukan perubahan gitleaks**: alat dan versinya sama, hanya
-  korpusnya yang bertambah.
+- Pada perbandingan 47 kasus sebelumnya, gitleaks tercatat 0,83 dan 0,79 (precision
+  dan recall). Perubahan sesudahnya **bukan perubahan gitleaks**: alat dan
+  versinya sama. Korpus bertambah menjadi 55 kasus, lalu nilai kasus `github-pat`
+  diganti ke bentuk token asli (setelah v0.1.5), yang menaikkan hasil gitleaks dari
+  0,79 dan 0,79 menjadi 0,80 dan 0,84. Hasil secret-guard tidak berubah.
 - Salah alarm baru gitleaks, `dotenv-checksum-name`, berasal dari kasus yang
   ditulis untuk menguji filter nama-hash milik secret-guard. Kasus itu tidak adil
   dihitung sebagai kekurangan gitleaks.
 
 Perbedaan per kasus:
 
-- **Hanya secret-guard yang menangkap:** `github-pat`, `telegram-bot`,
-  `private-key-header`, dan `db-url-password`. Penyelidikan (gitleaks 8.26.0,
-  nilai acak dirakit saat runtime, satu mesin) menunjukkan keempatnya bukan
-  kelemahan sederhana salah satu alat:
-  - `github-pat`: nilai di korpus lebih pendek dari token asli (24 karakter
-    setelah `github_pat_`, token asli 82). Gitleaks menemukan token berbentuk asli,
-    jadi ini artefak korpus, bukan kekurangan gitleaks.
+- **Hanya secret-guard yang menangkap:** `telegram-bot`, `private-key-header`,
+  dan `db-url-password`. Penyelidikan (gitleaks 8.26.0, nilai acak dirakit saat
+  runtime, satu mesin) menunjukkan ketiganya bukan kelemahan sederhana salah satu
+  alat. `github-pat` dulu juga di daftar ini dan ternyata artefak korpus:
+  - `github-pat` (dulu di daftar ini): nilai di korpus lebih pendek dari token
+    asli (24 karakter setelah `github_pat_`, token asli 82). Setelah diganti ke
+    bentuk asli, gitleaks menangkapnya juga, jadi ini artefak korpus.
   - `telegram-bot`: gitleaks mendeteksi token Telegram hanya bila nama variabel
     memuat `telegram` dan nilainya berawalan `:A`. secret-guard mengenali bentuk
     tokennya tanpa melihat nama. Itu beda rancangan.
