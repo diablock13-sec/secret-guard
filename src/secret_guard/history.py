@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from secret_guard.scanner import Finding, scan_diff
+from secret_guard.scanner import Finding, LongLine, scan_diff_report
 
 # Penanda commit di keluaran `git log`. Baris isi diff selalu diawali +, -, spasi, atau @@,
 # jadi baris berawalan karakter kendali ini tidak mungkin berasal dari isi file.
@@ -25,6 +25,7 @@ class HistoryResult:
     leaks: list[Leak]
     commits: int
     ignored: int
+    long_lines: list[LongLine] = field(default_factory=list)
 
 
 def split_commits(lines: Iterable[str]) -> Iterator[tuple[str, str, str]]:
@@ -56,10 +57,15 @@ def find_leaks(
     first: dict[Key, tuple[Finding, str, str]] = {}
     counts: dict[Key, int] = {}
     total = ignored = 0
+    long_seen: dict[str, LongLine] = {}  # satu laporan per path
     for sha, date, diff in commits:
         total += 1
         seen_here: set[Key] = set()
-        for f in scan_diff(diff):
+        findings, long_lines = scan_diff_report(diff)
+        for item in long_lines:
+            if not is_ignored(item[0]):
+                long_seen.setdefault(item[0], item)
+        for f in findings:
             if is_ignored(f.path):
                 ignored += 1
                 continue
@@ -72,4 +78,4 @@ def find_leaks(
         Leak(f.rule, f.path, f.line, f.preview, sha, date, counts[key])
         for key, (f, sha, date) in first.items()
     ]
-    return HistoryResult(leaks, total, ignored)
+    return HistoryResult(leaks, total, ignored, list(long_seen.values()))

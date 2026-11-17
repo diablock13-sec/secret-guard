@@ -13,7 +13,7 @@ from rich.text import Text
 
 from secret_guard.history import MARK_FORMAT, HistoryResult, find_leaks, split_commits
 from secret_guard.ignore import IGNORE_FILE, IgnoreError, is_ignored, parse_ignore
-from secret_guard.scanner import Finding, scan_diff
+from secret_guard.scanner import MAX_LINE_CHARS, Finding, LongLine, scan_diff_report
 
 EXIT_OK = 0
 EXIT_FINDINGS = 1
@@ -110,6 +110,20 @@ def report(findings: list[Finding]) -> None:
     out("  - Lewati sekali (tidak disarankan): git commit --no-verify")
 
 
+def warn_long_lines(long_lines: list[LongLine]) -> None:
+    for path, line, length in long_lines[:5]:
+        print(
+            f"secret-guard: peringatan: {_clean(path)}:{line} panjangnya {length} "
+            f"karakter, hanya {MAX_LINE_CHARS} karakter pertama dipindai",
+            file=sys.stderr,
+        )
+    if len(long_lines) > 5:
+        print(
+            f"secret-guard: peringatan: {len(long_lines) - 5} baris panjang lainnya",
+            file=sys.stderr,
+        )
+
+
 def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
     try:
         diff = (
@@ -122,7 +136,7 @@ def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
         print(f"secret-guard: {e}", file=sys.stderr)
         return EXIT_ERROR
 
-    findings = scan_diff(diff)
+    findings, long_lines = scan_diff_report(diff)
     kept = [f for f in findings if not is_ignored(f.path, patterns)]
     skipped = len(findings) - len(kept)
     if skipped:
@@ -130,6 +144,7 @@ def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
             f"secret-guard: {skipped} temuan diabaikan oleh {IGNORE_FILE}",
             file=sys.stderr,
         )
+    warn_long_lines([x for x in long_lines if not is_ignored(x[0], patterns)])
     if kept:
         report(kept)
         return EXIT_FINDINGS
@@ -244,6 +259,7 @@ def cmd_scan_history(*, max_commits: int | None, ignore_file: str | None) -> int
             f"secret-guard: {result.ignored} temuan diabaikan oleh {IGNORE_FILE}",
             file=sys.stderr,
         )
+    warn_long_lines(result.long_lines)
     if result.leaks:
         report_history(result)
         return EXIT_FINDINGS

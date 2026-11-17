@@ -2,6 +2,20 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/), versi mengikuti [SemVer](https://semver.org/).
 
+## [0.1.4] - 2026-11-16
+
+### Diubah
+- Batas pemindaian per baris naik dari 10.000 menjadi 1.000.000 karakter. Rahasia di antara karakter ke-10.000 dan ke-1.000.000 sebuah baris kini terdeteksi (di v0.1.3 lolos tanpa tanda). Satu baris 1 MB butuh sekitar 1,1 detik.
+- `scan-history` pada repo uji (302 commit, 19 MB teks, satu baris 2 MB) naik dari 5,3 detik menjadi 7,1 detik karena baris 2 MB kini dipindai sebagian. Memori puncak tetap 129 MB.
+
+### Ditambahkan
+- Peringatan di stderr untuk baris yang melebihi batas: nama file, nomor baris, panjang, dan jumlah karakter yang dipindai. Peringatan TIDAK memblokir commit dan tidak mengubah kode keluar, karena file hasil generate (bundle, lockfile) akan mendorong orang memakai `--no-verify`. `scan-history` melaporkan satu peringatan per file, dan file yang cocok dengan `.secretguardignore` tidak diperingatkan. Maksimal 5 peringatan dicetak, sisanya diringkas.
+- 4 test untuk peringatan (`tests/test_long_line_warning.py`) dan 5 test untuk batas baru (`tests/test_long_lines.py`).
+
+### Diketahui
+- Baris lebih panjang dari 1.000.000 karakter tetap hanya dipindai bagian awalnya. Rahasia di luar batas itu tidak terdeteksi, hanya diperingatkan.
+- Kerangka `pre-commit` menyembunyikan keluaran hook yang lolos. Peringatan baris panjang baru terlihat dengan `pre-commit run -v`.
+
 ## [0.1.3] - 2026-11-15
 
 ### Diperbaiki

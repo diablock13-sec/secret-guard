@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from secret_guard.diff import added_lines
 
 IGNORE_MARKER = "secret-guard:ignore"
-MAX_LINE_CHARS = 10_000
+MAX_LINE_CHARS = 1_000_000  # kasus terburuk terukur sekitar 1 detik per baris
 ENTROPY_MIN = 3.6
 VALUE_MIN_LEN = 16
 PLACEHOLDER_HINTS = (
@@ -180,8 +180,21 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
     return findings
 
 
-def scan_diff(diff: str) -> list[Finding]:
+# (path, nomor baris, panjang): baris tambahan yang lebih panjang dari MAX_LINE_CHARS
+LongLine = tuple[str, int, int]
+
+
+def scan_diff_report(diff: str) -> tuple[list[Finding], list[LongLine]]:
+    """Pindai diff. Baris lebih panjang dari MAX_LINE_CHARS hanya dipindai bagian
+    awalnya, jadi dikembalikan juga supaya pemanggil bisa memperingatkan pengguna."""
     findings: list[Finding] = []
+    long_lines: list[LongLine] = []
     for path, line_no, text in added_lines(diff):
+        if len(text) > MAX_LINE_CHARS:
+            long_lines.append((path, line_no, len(text)))
         findings.extend(scan_line(path, line_no, text))
-    return findings
+    return findings, long_lines
+
+
+def scan_diff(diff: str) -> list[Finding]:
+    return scan_diff_report(diff)[0]
