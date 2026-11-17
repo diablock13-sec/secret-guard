@@ -58,7 +58,7 @@ Kalau proyekmu sudah memakai [pre-commit](https://pre-commit.com/), tambahkan ke
 ```yaml
 repos:
   - repo: https://github.com/diablock13-sec/secret-guard
-    rev: v0.1.4
+    rev: v0.1.5
     hooks:
       - id: secret-guard
 ```
@@ -140,10 +140,11 @@ Kegagalan yang diketahui:
   `pre-commit run -v`.
 - Kinerja pada satu mesin dan repo buatan (302 commit, 19 MB teks, satu baris
   2 MB, biner 20 MB), jadi anggap sebagai gambaran kasar: `scan-history` sekitar
-  7 detik dan 129 MB memori (diukur ulang di v0.1.4), `scan` pada 19 MB teks
-  yang di-stage sekitar 5 detik dan 82 MB, pada biner 20 MB sekitar 0,2 detik
-  (dua angka terakhir dari v0.1.3, belum diukur ulang). Memori kira-kira tiga kali
-  ukuran diff karena diff dibaca utuh. Dua repo sungguhan kecil (344 dan 56 commit, di bawah 2 MB teks diff)
+  5,5 detik dan 38 MB, `scan` pada 19 MB teks yang di-stage sekitar 5 detik dan
+  25 MB (v0.1.5; angka memori hanya proses Python, tanpa proses `git`). Biner
+  20 MB sekitar 0,2 detik (dari v0.1.3, belum diukur ulang). Diff dibaca baris
+  demi baris (sebelumnya sekitar 82 MB pada ukuran yang sama); pertumbuhan
+  memori terhadap ukuran diff belum diukur. Dua repo sungguhan kecil (344 dan 56 commit, di bawah 2 MB teks diff)
   diukur pada satu mesin: keduanya bersih dan sekitar 0,5 detik, tetapi waktu itu
   didominasi waktu mulai program, jadi bukan ukuran beban. Repo besar belum diukur.
 - Perbandingan berdampingan baru dengan gitleaks, pada korpus yang ditulis untuk

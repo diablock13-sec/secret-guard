@@ -1,15 +1,24 @@
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 
 HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 
+# Teks diff utuh, atau aliran baris tanpa akhir baris (untuk diff besar).
+DiffInput = str | Iterable[str]
 
-def added_lines(diff: str) -> Iterator[tuple[str, int, str]]:
+
+def added_lines(diff: DiffInput) -> Iterator[tuple[str, int, str]]:
     """Dari teks `git diff`, hasilkan (path, nomor_baris, isi) untuk baris yang DITAMBAH."""
     path: str | None = None
     in_hunk = False
     line_no = 0
-    for raw in diff.splitlines():
+    # splitlines() membuang \r di akhir baris; aliran baris harus sama hasilnya.
+    lines = (
+        diff.splitlines()
+        if isinstance(diff, str)
+        else (ln.removesuffix("\r") for ln in diff)
+    )
+    for raw in lines:
         if raw.startswith("diff --git "):
             in_hunk = False
             path = None

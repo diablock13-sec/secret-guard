@@ -2,6 +2,20 @@
 
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/), versi mengikuti [SemVer](https://semver.org/).
 
+## [0.1.5] - 2026-11-17
+
+### Diubah
+- `scan` kini membaca `git diff --cached` dan stdin baris demi baris, bukan sekaligus. Memori puncak proses Python pada 19 MB teks yang di-stage turun dari 82 MB menjadi 24-25 MB (repo uji buatan, satu mesin, tiga jalan). Waktu tetap sekitar 5 detik: 4,9-5,0 detik sebelum dan 5,2-5,8 detik sesudah, selisih kecil yang mungkin biaya pemrosesan per baris.
+- `scan-history` tidak berubah secara terukur: 5,5-5,8 detik dan 38 MB proses Python, sebelum dan sesudah (repo uji 302 commit).
+- Pembaca keluaran git dipakai bersama oleh `scan` dan `scan-history` (internal).
+
+### Ditambahkan
+- `tests/test_streaming_scan.py`: dua test membuktikan aliran baris dan teks utuh menghasilkan baris tambahan yang sama, termasuk akhir baris CRLF. Tiga test menjaga perilaku `scan` pada repo Git sungguhan, termasuk gagal tertutup (kode keluar 2) di luar repo.
+
+### Diketahui
+- File besar tetap dipindai penuh, tidak dilewati.
+- Pengukuran memakai satu mesin dan repo buatan. Angka memori adalah proses Python saja, tidak termasuk proses `git`.
+
 ## [0.1.4] - 2026-11-16
 
 ### Diubah

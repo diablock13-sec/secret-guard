@@ -4,7 +4,7 @@ import re
 from collections import Counter
 from dataclasses import dataclass, field
 
-from secret_guard.diff import added_lines
+from secret_guard.diff import DiffInput, added_lines
 
 IGNORE_MARKER = "secret-guard:ignore"
 MAX_LINE_CHARS = 1_000_000  # kasus terburuk terukur sekitar 1 detik per baris
@@ -184,7 +184,7 @@ def scan_line(path: str, line_no: int, text: str) -> list[Finding]:
 LongLine = tuple[str, int, int]
 
 
-def scan_diff_report(diff: str) -> tuple[list[Finding], list[LongLine]]:
+def scan_diff_report(diff: DiffInput) -> tuple[list[Finding], list[LongLine]]:
     """Pindai diff. Baris lebih panjang dari MAX_LINE_CHARS hanya dipindai bagian
     awalnya, jadi dikembalikan juga supaya pemanggil bisa memperingatkan pengguna."""
     findings: list[Finding] = []
@@ -196,5 +196,5 @@ def scan_diff_report(diff: str) -> tuple[list[Finding], list[LongLine]]:
     return findings, long_lines
 
 
-def scan_diff(diff: str) -> list[Finding]:
+def scan_diff(diff: DiffInput) -> list[Finding]:
     return scan_diff_report(diff)[0]

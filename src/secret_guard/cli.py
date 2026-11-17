@@ -53,6 +53,21 @@ def staged_diff() -> str:
     return proc.stdout.decode("utf-8", errors="replace")
 
 
+def iter_staged_lines() -> Iterator[str]:
+    """Alirkan `git diff --cached` baris demi baris, opsi sama dengan staged_diff."""
+    cmd = [
+        "git", "-c", "core.quotepath=false",
+        "diff", "--cached", "--no-color", "--no-ext-diff", "--no-textconv",
+        "--no-renames", "--src-prefix=a/", "--dst-prefix=b/", "-U0",
+    ]  # fmt: skip
+    yield from _stream_git(cmd, "git diff")
+
+
+def iter_stdin_lines() -> Iterator[str]:
+    for raw in sys.stdin.buffer:
+        yield raw.decode("utf-8", errors="replace").rstrip("\n")
+
+
 def load_ignore(explicit: str | None) -> list[str]:
     if explicit:
         path, required = Path(explicit), True
@@ -126,17 +141,12 @@ def warn_long_lines(long_lines: list[LongLine]) -> None:
 
 def cmd_scan(*, use_stdin: bool, ignore_file: str | None, quiet: bool) -> int:
     try:
-        diff = (
-            sys.stdin.buffer.read().decode("utf-8", errors="replace")
-            if use_stdin
-            else staged_diff()
-        )
+        lines = iter_stdin_lines() if use_stdin else iter_staged_lines()
         patterns = load_ignore(ignore_file)
+        findings, long_lines = scan_diff_report(lines)
     except (GitError, IgnoreError) as e:
         print(f"secret-guard: {e}", file=sys.stderr)
         return EXIT_ERROR
-
-    findings, long_lines = scan_diff_report(diff)
     kept = [f for f in findings if not is_ignored(f.path, patterns)]
     skipped = len(findings) - len(kept)
     if skipped:
@@ -179,6 +189,12 @@ def iter_log_lines(max_commits: int | None) -> Iterator[str]:
     ]
     if max_commits:
         cmd += ["-n", str(max_commits)]
+    yield from _stream_git(cmd, "git log")
+
+
+def _stream_git(cmd: list[str], what: str) -> Iterator[str]:
+    """Jalankan git dan alirkan stdout baris demi baris. Kode keluar bukan 0
+    memunculkan GitError setelah aliran habis."""
     with tempfile.TemporaryFile() as errors:
         try:
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errors)
@@ -186,7 +202,7 @@ def iter_log_lines(max_commits: int | None) -> Iterator[str]:
             raise GitError("git tidak ditemukan di PATH") from None
         stream = proc.stdout
         if stream is None:
-            raise GitError("git log tidak menghasilkan keluaran")
+            raise GitError(f"{what} tidak menghasilkan keluaran")
         try:
             for raw in stream:
                 yield raw.decode("utf-8", errors="replace").rstrip("\n")
@@ -199,7 +215,7 @@ def iter_log_lines(max_commits: int | None) -> Iterator[str]:
             errors.seek(0)
             lines = errors.read().decode("utf-8", errors="replace").strip().splitlines()
             detail = lines[0] if lines else f"kode keluar {code}"
-            raise GitError(f"git log gagal: {detail}")
+            raise GitError(f"{what} gagal: {detail}")
 
 
 def report_history(result: HistoryResult) -> None:
