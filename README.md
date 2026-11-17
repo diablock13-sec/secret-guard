@@ -188,9 +188,19 @@ sama dengan memindai repo sungguhan. Dua catatan tambahan:
 Perbedaan per kasus:
 
 - **Hanya secret-guard yang menangkap:** `github-pat`, `telegram-bot`,
-  `private-key-header`, dan `db-url-password`. Alasan gitleaks melewatkannya belum
-  diselidiki. Dugaan: kasus satu baris merugikan aturan yang butuh konteks
-  (misalnya blok kunci privat). Itu dugaan, belum diuji.
+  `private-key-header`, dan `db-url-password`. Penyelidikan (gitleaks 8.26.0,
+  nilai acak dirakit saat runtime, satu mesin) menunjukkan keempatnya bukan
+  kelemahan sederhana salah satu alat:
+  - `github-pat`: nilai di korpus lebih pendek dari token asli (24 karakter
+    setelah `github_pat_`, token asli 82). Gitleaks menemukan token berbentuk asli,
+    jadi ini artefak korpus, bukan kekurangan gitleaks.
+  - `telegram-bot`: gitleaks mendeteksi token Telegram hanya bila nama variabel
+    memuat `telegram` dan nilainya berawalan `:A`. secret-guard mengenali bentuk
+    tokennya tanpa melihat nama. Itu beda rancangan.
+  - `private-key-header`: gitleaks menandai blok kunci privat lengkap (awal sampai
+    akhir), secret-guard menandai headernya saja. Beda definisi temuan.
+  - `db-url-password`: gitleaks bawaan tidak menandai kredensial di URL koneksi
+    pada tiga bentuk yang diuji (`.env`, YAML, Python). Berlaku untuk versi ini.
 - **Salah alarm di keduanya:** `uuid-session-token`.
 - **Salah alarm hanya di gitleaks:** `sha-named-token`, `stripe-test-key`, dan
   `dotenv-checksum-name` (lihat catatan di atas). Label "aman" untuk kunci uji
