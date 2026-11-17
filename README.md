@@ -7,6 +7,10 @@ sudah di-`git add`, memasang hook `pre-commit` yang memblokir commit berisi raha
 dan bisa memindai seluruh riwayat Git. Proyek belajar. Baca bagian **Keterbatasan**
 sebelum dipakai untuk sesuatu yang penting.
 
+![Demo: commit berisi kunci palsu diblokir](docs/demo.gif)
+
+Kunci di demo adalah kunci **palsu** yang dirakit oleh `docs/demo.sh` saat dijalankan. Teks `<kunci>` di layar hanyalah pengganti. Rekaman aslinya ada di `docs/demo.cast` (`asciinema play docs/demo.cast`), dan GIF dibuat oleh `docs/cast2gif.py`.
+
 ## Pasang
 
     git clone https://github.com/diablock13-sec/secret-guard.git
