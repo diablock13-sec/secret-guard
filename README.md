@@ -143,8 +143,9 @@ Kegagalan yang diketahui:
   5,5 detik dan 38 MB, `scan` pada 19 MB teks yang di-stage sekitar 5 detik dan
   25 MB (v0.1.5; angka memori hanya proses Python, tanpa proses `git`). Biner
   20 MB sekitar 0,2 detik (dari v0.1.3, belum diukur ulang). Diff dibaca baris
-  demi baris (sebelumnya sekitar 82 MB pada ukuran yang sama); pertumbuhan
-  memori terhadap ukuran diff belum diukur. Dua repo sungguhan kecil (344 dan 56 commit, di bawah 2 MB teks diff)
+  demi baris (sebelumnya sekitar 82 MB pada ukuran yang sama); pada 5, 19, 60,
+  dan 120 MB teks yang di-stage memori tetap sekitar 25 MB dan waktu naik linear
+  (sekitar 0,26 detik per MB; banyak file sekitar 1 MB, bukan satu file raksasa). Dua repo sungguhan kecil (344 dan 56 commit, di bawah 2 MB teks diff)
   diukur pada satu mesin: keduanya bersih dan sekitar 0,5 detik, tetapi waktu itu
   didominasi waktu mulai program, jadi bukan ukuran beban. Repo besar belum diukur.
 - Perbandingan berdampingan baru dengan gitleaks, pada korpus yang ditulis untuk
